@@ -2,6 +2,9 @@ window.onload = ->
   drow_canvas()
 
 drow_canvas = ->
+  particles = []
+  particlesNum = 100
+
   canvas = document.getElementById 'c'
   ctx = canvas.getContext '2d'
 
@@ -39,9 +42,41 @@ drow_canvas = ->
     ctx.lineWidth = 20
     ctx.stroke()
 
-  ctx.save()
-  ctx.beginPath()
-  drawM()
-  ctx.clip()
-  gradient()
-  ctx.restore()
+  class Particle
+    constructor: ->
+      @x = @_random cw
+      @y = ch
+      @r = 3 + @_random 15
+      @opacity = Math.random()
+      @velocity = @opacity * 10
+
+    _random: (n) ->
+      Math.floor Math.random() * n
+
+  for i in [0...particlesNum]
+    particles.push new Particle()
+
+  (draw = ->
+    ctx.save()
+
+    ctx.beginPath()
+    drawM()
+    ctx.clip()
+    gradient()
+
+    for i in [0...particlesNum]
+      p = particles[i]
+      ctx.fillStyle = 'rgba(255,255,255,' + p.opacity + ')'
+
+      ctx.beginPath()
+      ctx.arc p.x, p.y, p.r, 0, Math.PI * 2, false
+
+      p.y -= p.velocity
+      ctx.fill()
+
+      p.y = ch if p.y < 0
+
+    ctx.restore()
+
+    requestAnimationFrame draw
+  )()
